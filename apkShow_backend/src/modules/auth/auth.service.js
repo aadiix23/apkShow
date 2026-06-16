@@ -1,15 +1,14 @@
 const bcrypt = require("bcrypt");
-const crypto = require("crypto");
-const pool = require("../config/db")
+const { pool } = require("../../config/db")
 const jwt = require("jsonwebtoken")
 require('dotenv').config();
 
-const register = async({name,email,password})=>{
+const register = async(name,email,password)=>{
     let existing = await pool.query(
         "SELECT EMAIL FROM users WHERE email= $1",[email]
     );
     if(existing.rows.length>0){
-        throw new appError("Email Already Registered",409)
+        throw new Error("Email Already Registered")
     }
     const passwordHash = await bcrypt.hash(password,12)
     const {rows}= await pool.query(`
@@ -19,7 +18,7 @@ const register = async({name,email,password})=>{
         `,[name,email,passwordHash]);
 
         const user = rows[0];
-        logger.info("User Registered")
+        console.log("User Registered")
         return user;
 }
 
@@ -28,12 +27,12 @@ const login = async(email,password)=>{
        "SELECT id,email,password_hash FROM users WHERE email = $1",[email]
    );
    if(existingUser.rows.length===0){
-    throw new appError("Account is Not Registered",401)
+    throw new Error("Account is Not Registered",401)
    }
    const user = existingUser.rows[0];
    const isMatch = await bcrypt.compare(password,user.password_hash)
    if(!isMatch){
-    throw new appError("Invalid Credentials",401)
+    throw new Error("Invalid Credentials",401)
    }
    const token = jwt.sign(
     {
@@ -44,7 +43,7 @@ const login = async(email,password)=>{
         expiresIn:"3d"
     }
    )
-   logger.info("User LoggedIN",{
+   console.log("User LoggedIN",{
     userId:user.id,
     userEmail:user.email,
    })
@@ -56,14 +55,14 @@ const login = async(email,password)=>{
   token
 };
 }
-const forgotPassword = async ({ email }) => {
+const forgotPassword = async ( email ) => {
   const existingUser = await pool.query(
     "SELECT id,email FROM users WHERE email = $1",
     [email]
   );
 
   if (existingUser.rows.length === 0) {
-    throw new appError("Account is Not Registered", 404);
+    throw new Error("Account is Not Registered", 404);
   }
 
   const user = existingUser.rows[0];
@@ -75,7 +74,7 @@ const forgotPassword = async ({ email }) => {
 
   const resetLink = `${process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`}/reset-password?token=${resetToken}`;
 
-  logger.info("Password reset requested", {
+  console.log("Password reset requested", {
     userId: user.id,
     userEmail: user.email,
     resetLink,
