@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const controller = require("./apps.controller");
+const controller = require("./app.controller");
 const verifyToken = require("../../middleware/auth.middleware");
-const upload = require("../../middleware/upload.middleware");
+const upload = require("../../middleware/multer");
 
 router.post("/upload", verifyToken, upload.single("apk"), controller.uploadApp);
 

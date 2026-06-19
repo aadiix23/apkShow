@@ -1,4 +1,4 @@
-const appsService = require("./apps.service");
+const appsService = require("./app.service");
 
 const uploadApp = async (req, res) => {
   try {
