@@ -41,6 +41,11 @@ const createDemoLink = async({appId,userId})=>{
     `SELECT name FROM users WHERE id = $1`,
     [userId]
   );
+  if (userResult.rows.length === 0) {
+    const error = new Error("User not found");
+    error.status = 404;
+    throw error;
+  }
   const username = userResult.rows[0].name;
   const token = generateUniqueToken();
    const slug = generateSlug(username, app.app_name);
