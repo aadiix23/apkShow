@@ -8,7 +8,9 @@ const register = async(name,email,password)=>{
         "SELECT EMAIL FROM users WHERE email= $1",[email]
     );
     if(existing.rows.length>0){
-        throw new Error("Email Already Registered")
+        const error = new Error("Email Already Registered");
+        error.status = 409;
+        throw error;
     }
     const passwordHash = await bcrypt.hash(password,12)
     const {rows}= await pool.query(`
@@ -27,12 +29,16 @@ const login = async(email,password)=>{
        "SELECT id,email,password_hash FROM users WHERE email = $1",[email]
    );
    if(existingUser.rows.length===0){
-    throw new Error("Account is Not Registered",401)
+    const error = new Error("Account is Not Registered");
+    error.status = 404;
+    throw error;
    }
    const user = existingUser.rows[0];
    const isMatch = await bcrypt.compare(password,user.password_hash)
    if(!isMatch){
-    throw new Error("Invalid Credentials",401)
+    const error = new Error("Invalid Credentials");
+    error.status = 401;
+    throw error;
    }
    const token = jwt.sign(
     {
@@ -62,7 +68,9 @@ const forgotPassword = async ( email ) => {
   );
 
   if (existingUser.rows.length === 0) {
-    throw new Error("Account is Not Registered", 404);
+    const error = new Error("Account is Not Registered");
+    error.status = 404;
+    throw error;
   }
 
   const user = existingUser.rows[0];

@@ -28,7 +28,7 @@ const uploadApp = async (req, res) => {
 
     res.status(201).json({ Success: true, Message: "APK Uploaded Successfully", app: appRecord });
   } catch (error) {
-    res.status(400).json({ Success: false, Message: error.message });
+    res.status(error.status || 400).json({ Success: false, Message: error.message });
   }
 };
 const createDemoLink = async (req, res) => {
@@ -42,7 +42,7 @@ const createDemoLink = async (req, res) => {
 
     const demoLink = await appsService.createDemoLink({ appId, userId });
 
-    const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT}`;
+    const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 3000}`;
     const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
     const shareableLink = `${normalizedBaseUrl}/api/apps/demo/${demoLink.token}`;
 
@@ -56,7 +56,7 @@ const createDemoLink = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(400).json({ Success: false, Message: error.message });
+    res.status(error.status || 400).json({ Success: false, Message: error.message });
   }
 };
 const viewDemoLink = async (req, res) => {
@@ -88,7 +88,7 @@ const viewDemoLink = async (req, res) => {
       remainingSeconds: demoLink.view_time_limit_seconds - demoLink.view_time_used_seconds,
     });
   } catch (error) {
-    res.status(404).json({ Success: false, Message: error.message });
+    res.status(error.status || 404).json({ Success: false, Message: error.message });
   }
 };
 module.exports = { uploadApp,createDemoLink,viewDemoLink };
